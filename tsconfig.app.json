@@ -1,0 +1,25 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+    /* Vuex ve Diğer Gerekli Ayarlar */
+    "moduleResolution": "node", // Modül çözümleme stratejisi
+    "esModuleInterop": true, // CommonJS modülleriyle uyumluluk
+    "skipLibCheck": true, // Kütüphane dosyalarını kontrol etme
+    "allowSyntheticDefaultImports": true, // Synthetic default imports'u etkinleştir
+    "types": ["vite/client", "vuex"], // Vuex ve Vite için tip tanımlamaları
+    "baseUrl": ".", // Temel URL
+    "paths": {
+      "@/*": ["./src/*"] // Yol takma adları
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+}
