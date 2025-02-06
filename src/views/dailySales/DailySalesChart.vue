@@ -49,6 +49,7 @@ const firstDate = ref("");
 const secondDate = ref("");
 const clickCount = ref(0);
 const pageNumber = ref(1);
+const pageSize = ref(30);
 const isDaysCompare = ref(0);
 const dailySalesData = ref<[]>([]);
 const dailySalesSkuListData = ref<[]>([]);
@@ -98,7 +99,7 @@ const fetchDailySalesSkuList = async (
         sellerId: storeId,
         salesDate: firstDate.value,
         salesDate2: secondDate.value,
-        pageSize: 10,
+        pageSize: pageSize.value,
         pageNumber: pageNumber.value,
         isDaysCompare: isDaysCompare.value,
       },
@@ -109,9 +110,7 @@ const fetchDailySalesSkuList = async (
       }
     );
     dailySalesSkuListData.value = response.data.Data.item;
-    console.log("dailySalesSkuListData : ", dailySalesSkuListData.value);
-
-    const skuList = dailySalesSkuListData.value.skuList;
+    const skuList = dailySalesSkuListData.value?.skuList;
     await fetchSkuRefundRate(marketplaceName, storeId, skuList);
   } catch (error: any) {
     throw new Error(error);
@@ -160,7 +159,7 @@ function getDayByDate(date: string) {
   const dayNumber = d.getDay();
   return weekday[dayNumber];
 }
-
+const selectedColumns = ref<number[]>([]);
 const updateChart = async () => {
   const userInfo = store.getters.getUserInfo;
   const marketplaceName = userInfo?.Data?.user?.store[0]?.marketplaceName;
@@ -206,8 +205,8 @@ const updateChart = async () => {
             stacking: "normal",
             allowPointSelect: true,
             states: {
-              select: {
-                color: "#D3D3D3",
+              hover: {
+                enabled: false,
               },
             },
             dataLabels: {
@@ -226,6 +225,57 @@ const updateChart = async () => {
             point: {
               events: {
                 click: function () {
+                  const pointIndex = this.index;
+                  const indexInSelected =
+                    selectedColumns.value.indexOf(pointIndex);
+
+                  if (indexInSelected === -1) {
+                    selectedColumns.value.push(pointIndex);
+                    this.update(
+                      {
+                        color: "#D3D3D3",
+                        borderColor: "#000000",
+                        borderWidth: 2,
+                      },
+                      false
+                    );
+
+                    if (selectedColumns.value.length > 2) {
+                      const removedIndex = selectedColumns.value.shift();
+
+                      this.series.chart.series.forEach((series) => {
+                        const point = series.points[removedIndex];
+                        if (point) {
+                          point.update(
+                            {
+                              color: series.color,
+                              borderColor: null,
+                              borderWidth: 0,
+                            },
+                            false
+                          );
+                          this.series.chart.redraw();
+                        }
+                      });
+                    }
+                  } else {
+                    // Varsa, diziden çıkar
+                    selectedColumns.value.splice(indexInSelected, 1);
+                    // Seçimi kaldır ve rengini varsayılan hale getir
+                    this.series.chart.series.forEach((series) => {
+                      const point = series.points[pointIndex];
+                      if (point) {
+                        console.log("fghfghgfhfghfgh");
+                        point.update(
+                          {
+                            color: null, // Varsayılan renge dön
+                          },
+                          false
+                        );
+                      }
+                    });
+                  }
+
                   const selectedDate = newdailySalesData[this.index].date;
                   if (clickCount.value === 0) {
                     firstDate.value = selectedDate;

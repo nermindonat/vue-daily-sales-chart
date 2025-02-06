@@ -3,7 +3,7 @@
     class="w-full h-20 flex justify-between items-center shadow py-2 px-10 bg-blue-100 sticky top-0 left-0 z-50"
   >
     <div class="flex items-center justify-between p-2">
-      <a href="/" class="flex items-center">
+      <a href="/daily-sales-chart" class="flex items-center">
         <img
           src="/src/assets/images/image.png"
           alt=""

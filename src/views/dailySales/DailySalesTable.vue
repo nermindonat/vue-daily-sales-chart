@@ -83,7 +83,12 @@
             </div>
           </td>
           <td class="px-6 py-4 text-right">
-            {{ item.refundPercantage }} {{ item.refundPercantage ? "%" : "" }}
+            {{
+              props.skuRefundRateData[index] &&
+              props.skuRefundRateData[index].refundPercantage
+                ? props.skuRefundRateData[index].refundPercantage + "%"
+                : ""
+            }}
           </td>
         </tr>
       </tbody>

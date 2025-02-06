@@ -27,7 +27,14 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !store.getters.isAuthenticated) {
+  const token = localStorage.getItem("token");
+  const userInfo = localStorage.getItem("userInfo");
+
+  const isAuthenticated = Boolean(token && userInfo);
+
+  if (isAuthenticated && to.name !== "DailySalesChart") {
+    next({ name: "DailySalesChart" });
+  } else if (!isAuthenticated && to.meta.requiresAuth) {
     next({ name: "Login" });
   } else {
     next();

@@ -36,36 +36,6 @@
         />
       </span>
     </div>
-    <div
-      v-if="type === 'password' && progress && isPasswordFocused"
-      class="mt-5"
-    >
-      <div class="w-full h-2 rounded bg-gray-300">
-        <div
-          class="h-2 rounded transition-all duration-300"
-          :class="progressBarColor"
-          :style="{ width: progressBarWidth }"
-        ></div>
-      </div>
-      <div class="flex items-center justify-between">
-        <p class="text-sm mt-1" :class="progressTextColor">
-          {{ passwordStrengthText }}
-        </p>
-        <div class="relative group">
-          <Icon
-            icon="material-symbols:info-outline"
-            width="1.2em"
-            height="1.2em"
-          />
-          <div
-            class="absolute hidden group-hover:block text-sm bg-white text-black p-2 rounded-md mt-1 w-64 border border-gray-400 z-10"
-          >
-            Şifreniz en az 8 karakterden oluşmalı, bir büyük harf, bir rakam ve
-            bir özel karakter içermelidir.
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -84,7 +54,6 @@ export interface IProps {
   errorMessage?: string;
   required?: boolean;
   wrapperClass?: HTMLAttributes["class"];
-  progress?: boolean;
 }
 
 const props = withDefaults(defineProps<IProps>(), {
@@ -108,70 +77,4 @@ const handleFocus = () => {
     isPasswordFocused.value = true;
   }
 };
-
-const passwordStrength = computed(() => {
-  if (!value.value || typeof value.value !== "string") return 0;
-  let strength = 0;
-
-  if (value.value.length >= 8) strength++;
-  if (/[a-z]/.test(value.value)) strength++;
-  if (/[A-Z]/.test(value.value)) strength++;
-  if (/[0-9]/.test(value.value)) strength++;
-  if (/[^a-zA-Z0-9]/.test(value.value)) strength++;
-
-  return strength;
-});
-
-const progressBarColor = computed(() => {
-  switch (passwordStrength.value) {
-    case 1:
-      return "bg-red-500";
-    case 2:
-      return "bg-orange-500";
-    case 3:
-      return "bg-yellow-500";
-    case 4:
-      return "bg-blue-500";
-    case 5:
-      return "bg-green-500";
-    default:
-      return "bg-gray-300";
-  }
-});
-
-const progressBarWidth = computed(
-  () => `${(passwordStrength.value / 5) * 100}%`
-);
-
-const passwordStrengthText = computed(() => {
-  switch (passwordStrength.value) {
-    case 1:
-      return "Zayıf Şifre";
-    case 2:
-      return "Zayıf Şifre";
-    case 3:
-      return "Orta Şifre";
-    case 4:
-      return "İyi Şifre";
-    case 5:
-      return "Güçlü Şifre";
-    default:
-      return "Şifre Girin";
-  }
-});
-
-const progressTextColor = computed(() => {
-  switch (passwordStrength.value) {
-    case 1:
-      return "text-red-500";
-    case 2:
-      return "text-yellow-500";
-    case 3:
-      return "text-blue-500";
-    case 4:
-      return "text-green-500";
-    default:
-      return "text-gray-500";
-  }
-});
 </script>
