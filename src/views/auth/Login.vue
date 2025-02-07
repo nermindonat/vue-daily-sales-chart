@@ -13,7 +13,7 @@
           v-if="showErrorMessage"
           class="text-[#d0021b] leading-[15px] p-[14px_20px_13px] mb-4 flex items-center border border-[#817274] rounded-sm bg-[#fff4f6]"
         >
-          E-posta adresiniz veya şifreniz hatalı.
+          Your email address or password is incorrect.
         </div>
         <div class="grid w-full grid-cols-1 md:grid-cols-1 gap-4">
           <Input
@@ -21,7 +21,7 @@
             label="Email"
             v-model="email"
             :errorMessage="emailError"
-            placeholder="E-posta Adresi"
+            placeholder="Email Address"
             required
           />
           <Input
@@ -30,7 +30,7 @@
             label="Password"
             v-model="password"
             :errorMmessage="passwordError"
-            placeholder="Şifre"
+            placeholder="Password"
             required
           />
           <Button type="submit">Login</Button>
@@ -55,8 +55,11 @@ const router = useRouter();
 const showErrorMessage = ref(false);
 
 const validationSchema = yup.object({
-  email: yup.string().required("E-posta alanı zorunludur"),
-  password: yup.string().required("Şifre alanı zorunludur"),
+  email: yup
+    .string()
+    .email("Please enter a valid e-mail address")
+    .required("Email field is required"),
+  password: yup.string().required("Password field is required"),
 });
 
 const form = useForm({ validationSchema });
@@ -71,7 +74,7 @@ const submitHandler = form.handleSubmit(async (values) => {
     router.push("/daily-sales-chart");
   } catch (error) {
     showErrorMessage.value = true;
-    console.error("Giriş yaparken bir hata oluştu.", error);
+    console.error("An error occurred while logging in.", error);
   }
 });
 </script>

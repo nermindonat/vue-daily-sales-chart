@@ -42,7 +42,6 @@ interface User {
 const userInfo = ref<User>({ firstName: "", lastName: "" });
 
 const logout = () => {
-  console.log("clcik");
   store.dispatch("logout");
 };
 

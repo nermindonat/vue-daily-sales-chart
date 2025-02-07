@@ -49,7 +49,7 @@ export default createStore({
         });
 
         if (response.data.ApiStatus === false) {
-          const errorMessage = "E-posta adresiniz veya şifreniz hatalı.";
+          const errorMessage = "Your email address or password is incorrect.";
           commit("setError", errorMessage);
           throw new Error(errorMessage);
         }
@@ -67,10 +67,9 @@ export default createStore({
 
     async fetchUserInformation({ commit, state }, email: string) {
       if (!state.token) {
-        commit("setError", "Token bulunamadı, lütfen giriş yapınız.");
+        commit("setError", "Token not found, please log in.");
         return;
       }
-
       commit("setError", null);
       try {
         const response = await axios.post(
@@ -87,7 +86,8 @@ export default createStore({
       } catch (error: any) {
         commit(
           "setError",
-          error.response?.data?.message || "Kullanıcı bilgileri alınamadı"
+          error.response?.data?.message ||
+            "Could not retrieve user information."
         );
         throw error;
       }
