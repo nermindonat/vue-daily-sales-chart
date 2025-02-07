@@ -21,16 +21,17 @@
   <DailySalesTable
     v-if="showDetailTable"
     :dailySalesData="dailySalesData"
-    :dailySalesSkuListData="dailySalesSkuListData"
+    :dailySalesSkuListData="currentPageData"
     :skuRefundRateData="skuRefundRateData"
-    :pageNumber="pageNumber"
+    :pageNumber="overallPageNumber"
+    :localPageSize="localPageSize"
     @prevPage="prevPage"
     @nextPage="nextPage"
   />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch, computed } from "vue";
 import axios from "axios";
 import Highcharts from "highcharts";
 import { useStore } from "vuex";
@@ -48,13 +49,15 @@ const showDetailTable = ref(false);
 const firstDate = ref("");
 const secondDate = ref("");
 const clickCount = ref(0);
-const pageNumber = ref(1);
-const pageSize = ref(30);
 const isDaysCompare = ref(0);
 const dailySalesData = ref<[]>([]);
 const dailySalesSkuListData = ref<[]>([]);
 const skuRefundRateData = ref<[]>([]);
 const pageLoading = ref(false);
+const pageNumber = ref(1);
+const pageSize = ref(30);
+const localPageNumber = ref(1);
+const localPageSize = 10;
 
 const fetchDailySales = async (
   marketplaceName: string,
@@ -79,8 +82,6 @@ const fetchDailySales = async (
       }
     );
     dailySalesData.value = response.data.Data.item;
-    // console.log("dailySalesData:", dailySalesData.value);
-
     return response.data.Data.item;
   } catch (error) {
     console.error("Veri çekme hatası:", error);
@@ -110,10 +111,68 @@ const fetchDailySalesSkuList = async (
       }
     );
     dailySalesSkuListData.value = response.data.Data.item;
+    localPageNumber.value = 1;
     const skuList = dailySalesSkuListData.value?.skuList;
     await fetchSkuRefundRate(marketplaceName, storeId, skuList);
   } catch (error: any) {
     throw new Error(error);
+  }
+};
+
+const currentPageData = computed(() => {
+  const allData = dailySalesSkuListData.value;
+  if (!allData) {
+    return {};
+  }
+  const skuList = allData.skuList;
+  if (!Array.isArray(skuList)) {
+    return allData;
+  }
+  const startIndex = (localPageNumber.value - 1) * localPageSize;
+  const endIndex = localPageNumber.value * localPageSize;
+
+  return {
+    ...allData,
+    skuList: skuList.slice(startIndex, endIndex),
+  };
+});
+
+const overallPageNumber = computed(() => {
+  return (
+    (pageNumber.value - 1) * (pageSize.value / localPageSize) +
+    localPageNumber.value
+  );
+});
+
+const nextPage = async () => {
+  const userInfo = store.getters.getUserInfo;
+  const marketplaceName = userInfo?.Data?.user?.store[0]?.marketplaceName;
+  const storeId = userInfo?.Data?.user?.store[0]?.storeId;
+  const totalLocalPages = pageSize.value / localPageSize;
+
+  if (localPageNumber.value < totalLocalPages) {
+    localPageNumber.value++;
+  } else {
+    pageNumber.value++;
+    await fetchDailySalesSkuList(marketplaceName, storeId);
+    localPageNumber.value = 1;
+  }
+};
+
+const prevPage = async () => {
+  const userInfo = store.getters.getUserInfo;
+  const marketplaceName = userInfo?.Data?.user?.store[0]?.marketplaceName;
+  const storeId = userInfo?.Data?.user?.store[0]?.storeId;
+
+  const totalLocalPages = pageSize.value / localPageSize;
+  if (localPageNumber.value > 1) {
+    localPageNumber.value--;
+  } else {
+    if (pageNumber.value > 1) {
+      pageNumber.value--;
+      await fetchDailySalesSkuList(marketplaceName, storeId);
+      localPageNumber.value = totalLocalPages;
+    }
   }
 };
 
@@ -137,9 +196,7 @@ const fetchSkuRefundRate = async (
         },
       }
     );
-
     skuRefundRateData.value = response.data.Data;
-    // console.log("skuRefundRateData :", skuRefundRateData.value);
   } catch (error) {
     console.error("Error fetching data:", error);
   }
@@ -159,7 +216,9 @@ function getDayByDate(date: string) {
   const dayNumber = d.getDay();
   return weekday[dayNumber];
 }
+
 const selectedColumns = ref<number[]>([]);
+
 const updateChart = async () => {
   const userInfo = store.getters.getUserInfo;
   const marketplaceName = userInfo?.Data?.user?.store[0]?.marketplaceName;
@@ -242,7 +301,6 @@ const updateChart = async () => {
 
                     if (selectedColumns.value.length > 2) {
                       const removedIndex = selectedColumns.value.shift();
-
                       this.series.chart.series.forEach((series) => {
                         const point = series.points[removedIndex];
                         if (point) {
@@ -259,16 +317,13 @@ const updateChart = async () => {
                       });
                     }
                   } else {
-                    // Varsa, diziden çıkar
                     selectedColumns.value.splice(indexInSelected, 1);
-                    // Seçimi kaldır ve rengini varsayılan hale getir
                     this.series.chart.series.forEach((series) => {
                       const point = series.points[pointIndex];
                       if (point) {
-                        console.log("fghfghgfhfghfgh");
                         point.update(
                           {
-                            color: null, // Varsayılan renge dön
+                            color: point.series.color,
                           },
                           false
                         );
@@ -312,30 +367,6 @@ const updateChart = async () => {
         ],
       });
     }
-    pageLoading.value = false;
-  }
-};
-
-const prevPage = async () => {
-  pageLoading.value = true;
-  const userInfo = store.getters.getUserInfo;
-  const marketplaceName = userInfo?.Data?.user?.store[0]?.marketplaceName;
-  const storeId = userInfo?.Data?.user?.store[0]?.storeId;
-  if (pageNumber.value > 1) {
-    pageNumber.value--;
-    await fetchDailySalesSkuList(marketplaceName, storeId);
-    pageLoading.value = false;
-  }
-};
-
-const nextPage = async () => {
-  pageLoading.value = true;
-  const userInfo = store.getters.getUserInfo;
-  const marketplaceName = userInfo?.Data?.user?.store[0]?.marketplaceName;
-  const storeId = userInfo?.Data?.user?.store[0]?.storeId;
-  if (userInfo && marketplaceName) {
-    pageNumber.value += 1;
-    await fetchDailySalesSkuList(marketplaceName, storeId);
     pageLoading.value = false;
   }
 };

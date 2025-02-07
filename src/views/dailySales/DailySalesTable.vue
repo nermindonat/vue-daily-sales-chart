@@ -134,9 +134,12 @@
         </li>
         <li>
           <a
-            @click="$emit('nextPage')"
+            @click="!isLastPage && $emit('nextPage')"
             href="#"
-            class="flex items-center justify-center px-3 h-8 leading-tight text-blue-600 bg-white border border-gray-300 rounded-e-xl hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+            :class="[
+              'flex items-center justify-center px-3 h-8 leading-tight text-blue-600 bg-white border border-gray-300 rounded-e-xl hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white',
+              { 'cursor-not-allowed opacity-50 text-gray-500': isLastPage },
+            ]"
           >
             <span class="sr-only">Next</span>
             <svg
@@ -163,14 +166,21 @@
 
 <script lang="ts" setup>
 import moment from "moment";
-import { defineProps, defineEmits } from "vue";
+import { computed, defineProps, defineEmits } from "vue";
+
 import SearchInput from "/src/components/SearchInput.vue";
 
+interface IDailySalesSkuListData {
+  selectedDate?: string;
+  selectedDate2?: string;
+  skuList: Array<any>;
+}
 interface IProps {
-  dailySalesData: [];
-  dailySalesSkuListData: [];
-  skuRefundRateData: [];
+  dailySalesData: any[];
+  dailySalesSkuListData: IDailySalesSkuListData;
+  skuRefundRateData: any[];
   pageNumber: number;
+  localPageSize: number;
 }
 const props = defineProps<IProps>();
 
@@ -179,7 +189,7 @@ interface IEmits {
   (event: "nextPage"): void;
 }
 
-const emit = defineEmits<IEmits>();
+defineEmits<IEmits>();
 
 function getDayByDate(date: string): string {
   const weekday = [
@@ -202,4 +212,10 @@ function getDayByDate(date: string): string {
 function formatDate(date: string): string {
   return moment(date).format("DD-MM-YYYY");
 }
+
+const isLastPage = computed(() => {
+  if (!props.dailySalesSkuListData || !props.dailySalesSkuListData.skuList)
+    return true;
+  return props.dailySalesSkuListData.skuList.length < props.localPageSize;
+});
 </script>
