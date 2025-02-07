@@ -62,7 +62,7 @@
                 {{
                   item.qty && !isNaN(item.amount / item.qty)
                     ? `$${(item.amount / item.qty).toFixed(2)}`
-                    : "$0.00"
+                    : "-"
                 }}
               </span>
             </div>
@@ -77,7 +77,7 @@
                 {{
                   item.qty2 && !isNaN(item.amount2 / item.qty2)
                     ? `$${(item.amount2 / item.qty2).toFixed(2)}`
-                    : "$0.00"
+                    : "-"
                 }}
               </span>
             </div>
@@ -167,8 +167,7 @@
 <script lang="ts" setup>
 import moment from "moment";
 import { computed, defineProps, defineEmits } from "vue";
-
-import SearchInput from "/src/components/SearchInput.vue";
+import SearchInput from "@/components/SearchInput.vue";
 
 interface IDailySalesSkuListData {
   selectedDate?: string;

@@ -36,8 +36,8 @@ import axios from "axios";
 import Highcharts from "highcharts";
 import { useStore } from "vuex";
 import DailySalesTable from "./DailySalesTable.vue";
-import Header from "/src/layouts/Header.vue";
-import Spinner from "/src/components/Spinner.vue";
+import Header from "@/layouts/Header.vue";
+import Spinner from "@/components/Spinner.vue";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const store = useStore();
