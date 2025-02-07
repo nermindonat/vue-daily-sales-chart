@@ -43,7 +43,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const store = useStore();
 
 const chartContainer = ref<HTMLDivElement | null>(null);
-const selectedDay = ref(30);
+const selectedDay = ref("30");
 const token = store.getters.getToken;
 const showDetailTable = ref(false);
 const firstDate = ref("");
@@ -51,7 +51,6 @@ const secondDate = ref("");
 const clickCount = ref(0);
 const isDaysCompare = ref(0);
 const dailySalesData = ref<[]>([]);
-const dailySalesSkuListData = ref<[]>([]);
 const skuRefundRateData = ref<[]>([]);
 const pageLoading = ref(false);
 const pageNumber = ref(1);
@@ -59,10 +58,28 @@ const pageSize = ref(30);
 const localPageNumber = ref(1);
 const localPageSize = 10;
 
+interface IDailySalesSkuListData {
+  selectedDate: string;
+  selectedDate2: string;
+  totalSale: number;
+  totalShippingAmount: number;
+  totalSale2: number;
+  skuList: any[];
+}
+
+const dailySalesSkuListData = ref<IDailySalesSkuListData>({
+  selectedDate: "",
+  selectedDate2: "",
+  totalSale: 0,
+  totalShippingAmount: 0,
+  totalSale2: 0,
+  skuList: [],
+});
+
 const fetchDailySales = async (
   marketplaceName: string,
   storeId: string,
-  selectedDay: number
+  selectedDay: string
 ) => {
   try {
     const response = await axios.post(
@@ -84,7 +101,7 @@ const fetchDailySales = async (
     dailySalesData.value = response.data.Data.item;
     return response.data.Data.item;
   } catch (error) {
-    console.error("Veri çekme hatası:", error);
+    console.error("Data extraction error:", error);
   }
 };
 
@@ -119,10 +136,17 @@ const fetchDailySalesSkuList = async (
   }
 };
 
-const currentPageData = computed(() => {
+const currentPageData = computed<IDailySalesSkuListData>(() => {
   const allData = dailySalesSkuListData.value;
   if (!allData) {
-    return {};
+    return {
+      selectedDate: "",
+      selectedDate2: "",
+      totalSale: 0,
+      totalShippingAmount: 0,
+      totalSale2: 0,
+      skuList: [],
+    };
   }
   const skuList = allData.skuList;
   if (!Array.isArray(skuList)) {
